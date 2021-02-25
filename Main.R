@@ -9,6 +9,7 @@
 
 library(shiny)
 library(shinydashboard)
+library(Quandl)
 source("HomePage.R")
 source("ViewFunds.R")
 source("ClassifyFunds.R")
@@ -28,14 +29,18 @@ ui <- dashboardPage(
                   id = "tabset1",
                   width = 12,
                   selected ="Home Page",
-                  tabPanel(id = "home_page","Home Page",home_page_content()),
-                  tabPanel(id = "view_funds","View Funds",view_funds_content()),
+                  tabPanel(id = "home_page","Home Page",
+                        home_page_content()
+                    ),
+                  tabPanel(id = "view_funds","View Funds",
+                        dataTableOutput('SchemeDetailsTable')
+                    ),
                   tabPanel(id = "classify_funds","Classify Funds",classify_funds_content()),
                   tabPanel(id = "analyse_fund","Analyse Fund Performance",analyse_fund_content())
                 )
             ),
             tags$footer(
-                    "Version 0.2 @Copyright Symbiosis Centre for Distance Learning 2021", 
+                    "Version 0.4 @Copyright Symbiosis Centre for Distance Learning 2021", 
                     align = "center",
                     style = "
                         background-color: red;
@@ -52,10 +57,10 @@ ui <- dashboardPage(
 
 # Define server logic
 server <- function(input, output) {
-output$tabset1Selected <- renderText({
-    input$tabset1
-})   
-
+    output$SchemeDetailsTable <- renderDataTable(
+        view_funds_content(),
+        searchDelay = 1000
+        )
 }
 
 # Run the application 
