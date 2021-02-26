@@ -10,10 +10,12 @@
 library(shiny)
 library(shinydashboard)
 library(Quandl)
+library(dplyr)
 source("HomePage.R")
 source("ViewFunds.R")
 source("ClassifyFunds.R")
 source("AnalyseFund.R")
+source("TabulateRawData.R")
 
 # Define UI for application
 ui <- dashboardPage(
@@ -33,7 +35,10 @@ ui <- dashboardPage(
                         home_page_content()
                     ),
                   tabPanel(id = "view_funds","View Funds",
-                        dataTableOutput('SchemeDetailsTable')
+                           dataTableOutput('SchemeDetailsTable'),
+                           style = "
+                                    font-size: 12px
+                                "
                     ),
                   tabPanel(id = "classify_funds","Classify Funds",classify_funds_content()),
                   tabPanel(id = "analyse_fund","Analyse Fund Performance",analyse_fund_content())
@@ -49,7 +54,7 @@ ui <- dashboardPage(
                         padding: 5px;
                         color: white;
                         width: 100%;
-                        font-size: 12px
+                        font-size: 14px
                     "
             )
         )
@@ -59,6 +64,7 @@ ui <- dashboardPage(
 server <- function(input, output) {
     output$SchemeDetailsTable <- renderDataTable(
         view_funds_content(),
+        options = list(pageLength = 10),
         searchDelay = 1000
         )
 }

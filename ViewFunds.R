@@ -19,9 +19,10 @@ view_funds_content <- function()
     Quandl.database.bulk_download_to_file(FileAPI,AbsoluteFilePath)
   }
   fname <- as.character(unzip(AbsoluteFilePath, list = TRUE)$Name)
-  SchemeMetaData <- read.csv(unzip(AbsoluteFilePath,fname))[,c(1,2,5,6)]
+  RawMetaData <- read.csv(unzip(AbsoluteFilePath,fname))[,c(1,2,5,6)]
   #file.remove(ZipName)
   #file.remove(fname)
   setwd(currentDir)
+  SchemeMetaData <- tabulate_meta_Data(RawMetaData)
   return(SchemeMetaData)
 }

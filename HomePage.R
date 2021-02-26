@@ -15,7 +15,7 @@ home_page_content <- function()
     p("2.Classify Funds"),
     p("3.Analyse Fund Performance"),
     style = "
-        font-size: 12px
+        font-size: 14px
     "
   )
 }
