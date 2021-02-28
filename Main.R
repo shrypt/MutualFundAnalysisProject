@@ -28,7 +28,7 @@ ui <- dashboardPage(
             fluidRow(
               tabBox(
                   title = "",
-                  id = "tabset1",
+                  id = "tabset",
                   width = 12,
                   selected ="Home Page",
                   tabPanel(id = "home_page","Home Page",
