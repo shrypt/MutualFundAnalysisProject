@@ -3,7 +3,7 @@ home_page_content <- function()
 {
   box(
     title = strong("Summary"),
-    background = "light-blue",
+    background = "blue",
     width = 12,
     solidHeader = TRUE,
     p("This web application serves to assist in rating performance of mutual funds
