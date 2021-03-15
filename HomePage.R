@@ -11,7 +11,7 @@ home_page_content <- function()
        dynamically using Quandl APIs."),
     br(),
     p("The user can perform following operations:"),
-    p("1.View, Search and Sort Funds"),
+    p("1.View, Search and Sort Funds."),
     p("2.Classify Funds"),
     p("3.Analyse Fund Performance"),
     style = "
