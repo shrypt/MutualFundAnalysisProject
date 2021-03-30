@@ -10,7 +10,7 @@ tabulate_meta_Data <- function(RawMetaData){
   RawMetaData$Option <- sapply(RawMetaData$Details,function(x) identify_fund_plan(x))
   RawMetaData$Type <- sapply(RawMetaData[,2],function(x) identify_fund_type(x))
   RawMetaData <- RawMetaData[-c(2)]
-  names(RawMetaData)[1] <- "F-Code"
+  names(RawMetaData)[1] <- "FCode"
   names(RawMetaData)[2] <- "From"
   names(RawMetaData)[3] <- "To"
   return(RawMetaData)

@@ -1,11 +1,8 @@
-# Analyze Fund Content and functions
-analyse_fund_content <- function()
+# Get NAV for selected Fund and time limits from Quandl
+get_NAV <- function(FCode,FY_StartLimit,FY_EndLimit,key)
 {
-  box(
-    title = strong("Analyse Fund"),
-    background = "blue",
-    width = 12,
-    solidHeader = TRUE,
-    p("Analyse selected fund. Time series analysis.")
-  )
+  FCode <- paste('AMFI/',FCode,sep = "")
+  X <- Quandl(FCode, start_date=FY_StartLimit, end_date=FY_EndLimit,column_index = '1',api_key=key)
+  names(X)[2] <- "NAV"
+  return(X)
 }
