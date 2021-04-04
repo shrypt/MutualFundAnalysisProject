@@ -2,13 +2,44 @@
 server <- function(input, output) {
   # Get all codes
   SchemaDetails_df <- view_funds_content()
-  # Set Quandl keys to use
-  key <- c("kxgRDGkKCSyyTRRNduxQ","6aTL3KgB6NoRZjDQWAR_","1yNXyvZrtMs6ZdoJGqnq","pZ1hhKssK7Aw7YXWrgHz")
+  # render table
+  # output$ClassifiedTable <- renderDataTable(
+  #   Classified_df(),
+  #   options = list(pageLength = 10),
+  #   searchDelay = 1000
+  # )
+  # render clustered plot
+  output$ClusteredPlot <- renderPlot({
+    fig <- Clustered_Plot()
+  })
+  # render forcasted plot
+  output$ForcastedPlot <- renderPlot({
+    Items <- Prediction_Plot()
+    Items[2]
+  })
+  # render table for View Funds
+  output$SchemeDetailsTable <- renderDataTable(
+    SchemaDetails_df,
+    options = list(pageLength = 10),
+    searchDelay = 1000,
+  )
+  # render plot for Classify Funds
+  output$CategoryPlot <- renderPlotly({
+    fig <- Classified_Plot()
+  })
+  # render plot for Analyze Fund
+  output$TimeSeriesPlot <- renderPlotly({
+    fig <- Analysed_Plot()
+  })
+  #Dynamically update FundCode Dropdown
+  observe({
+    updateSelectizeInput(session = getDefaultReactiveDomain(),"si_FCodes", choices = Analysed_dd_df(),server = TRUE)
+  })
   # Helper function to extract Fund Type
   Fund_Type <- reactive(
     {
       # Fetch Retail or Institutional from selected Fund type
-      str_extract(input$si_Fund,'\\b\\w+$')
+      str_extract(input$si_category,'\\b\\w+$')
     }
   )
   # Helper function to extract Start Date
@@ -54,77 +85,89 @@ server <- function(input, output) {
       return(closing_date)
     }
   )
+  #Helper function to create plot for classify funds
+  Classified_Plot <- eventReactive(input$btn_classify,{
+    Plot_df <- Classified_df()
+    Plot_df <- slice_max(Plot_df,n=5,order_by = Cumulative_NAV,with_ties = TRUE)
+    if(Fund_Type() == "Institutional" & toString(input$rb_FundOption) == "Dividend")
+    {
+      SelectedFund <- paste("Top",nrow(Plot_df),"Institutional",toString(input$rb_FundOption),"funds",sep = " ")
+    }
+    else{
+      SelectedFund <- paste(toString(input$si_category),toString(input$rb_FundOption),"funds",sep = " ")
+    }
+    fig <- plot_ly(data=Plot_df, x= ~FCode, y= ~Cumulative_NAV, type = "bar")
+    fig <- layout(fig, bargap = 0.8, title=SelectedFund)
+    return(fig)
+  })
+  #Helper function to create plot for analyze funds
+  Analysed_Plot <- eventReactive(input$btn_analyse,{
+    Plot_df <- Analysed_df()
+    SelectedFund <- paste("Past Performance of fund:",toString(input$si_FCodes),sep = " ")
+    fig <- plot_ly(data=Plot_df, x= ~Date, y= ~NAV, mode= "lines+markers", type = "scatter")
+    fig <- layout(fig, title=SelectedFund)
+    return(fig)
+  })
+  #Helper function to plot for analyze funds prediction
+  Prediction_Plot <- eventReactive(input$btn_analyse,{
+    df <- Analysed_df()
+    Y <- predict_NAV(df,FY_Start())
+    #fit_model <- ets(Y)
+    fit_model <- auto.arima(Y,stepwise = FALSE,approximation = FALSE)
+    #print(summary(fit_model))
+    #checkresiduals(fit_model)
+    fc <- forecast(fit_model,h=36)
+    fig <- autoplot(fc, include=12) + ggtitle("Predicted Performance") + xlab("Date") + ylab("NAV") +
+            theme(plot.title = element_text(hjust = 0.5))
+    Items <- list(fc,fig)
+    return(Items)
+  })
+  #Helper function to plot for classify funds prediction
+  Clustered_Plot <- eventReactive(input$btn_classify,{
+    d <- Classified_df()
+    d <- slice_max(d,n=10,order_by = Cumulative_NAV,with_ties = TRUE)
+    #Normalization
+    z <- d[,-c(1)]
+    z <- na.omit(z)
+    distance <- dist(z)
+    #hierarchical clustering
+    hc <- hclust(distance,method = "average")
+    fig <- plot(hc, hang =-1, labels=d$FCode,xlab="FCodes",sub="")
+    return(fig)
+  })
   # Helper function to extract dataframe for classification
   Classified_df <- eventReactive(input$btn_classify,
     {
       # Initialize Quandl Keys, F.Y. Start Date, F.Y. End Date, Selected: Fund Option & Fund Type 
       Start <- FY_Start()
       End <- FY_End()
-      SelectedFundOption <- toString(input$rb_FundOption)
       SelectedFundType <- Fund_Type()
-      # If User selected Dividend, limit dataframe to only annual dividend entries 
-      if(SelectedFundOption == "Dividend")
-      {
-        exclude_pattern <- "half|monthly|weekly|daily|fortnightly|quar|Qtrly"
-        ClassifiedDetails_df <- SchemaDetails_df[(SchemaDetails_df$Option == input$rb_FundOption) &
-                                                   (SchemaDetails_df$Type == Fund_Type()) &
-                                                   (SchemaDetails_df$From <= FY_Start()) &
-                                                   (SchemaDetails_df$To >= FY_End()),]
-        ClassifiedDetails_df <- filter(ClassifiedDetails_df,
-                                       (!(grepl(exclude_pattern,ClassifiedDetails_df$Scheme,ignore.case = TRUE) | 
-                                            grepl(exclude_pattern,ClassifiedDetails_df$Details,ignore.case = TRUE)
-                                       )
-                                       )
-        )
-      }
-      else{#else include all entries for Growth option
-        ClassifiedDetails_df <- SchemaDetails_df[(SchemaDetails_df$Option == input$rb_FundOption) &
-                                                   (SchemaDetails_df$Type == Fund_Type()) &
-                                                   (SchemaDetails_df$From <= FY_Start()) &
-                                                   (SchemaDetails_df$To >= FY_End()),]
-      }
+      SelectedFundOption <- toString(input$rb_FundOption)
+      # Filter All Codes
+      ClassifiedDetails_df <- filter_df(SchemaDetails_df,SelectedFundOption,Start,End,SelectedFundType)
       
-      # If Top 5 Retail selected, limit dataframe to only first 600 entries to handle real time network processing Quandl limit
-      # Divide dataframe into list of 4 dataframes each containing 150 rows 
-      if(SelectedFundType == "Retail"){
-        # Create 4 clusters
-        cl = makeCluster(detectCores(logical = FALSE))
-        registerDoParallel(cl)
-        
-        ClassifiedDetails_df <- ClassifiedDetails_df[1:600,]
-        v_iterator <- 1
-        data_list <- list()
-        for(frame in 1:4) {
-          df<- data.frame(ClassifiedDetails_df[v_iterator:(150*frame),c(1)])
-          names(df)[1] <- "FCode"
-          v_iterator <- v_iterator + 150
-          data_list <- append(data_list,list(df))
-          remove(df)
-        }
-        tryCatch({
-          #Export functions and data to clusters for parallel processing
-          clusterExport(cl,varlist = c("get_cumul_NAV","data_list","Quandl","Start","End","key"),envir = environment())
-          # Get cumulative NAV for all rows in 4 dataframes by cluster processing
-          RatedDetails_df <- foreach(code = 1:4, .combine = rbind) %dopar% {
-            get_cumul_NAV(data.frame(data_list[code]),Start,End,key[code])
-          }
-        },
-        # Stop all clusters and resume sequential flow
-        finally = stopCluster(cl))
-      }
-      else{ # For Top 5 Institutional selected, Get cumulative NAV for all rows in 1 dataframe by sequential processing
-        RatedDetails_df <- get_cumul_NAV(ClassifiedDetails_df['FCode'],Start,End,key[1])
-      }
-      # Extract Fund Code from returned fund code name
-      RatedDetails_df$FCode <- sapply(RatedDetails_df$FCode,function(x) gsub("AMFI.(\\d{6}).*$","\\1",x))
-      return(RatedDetails_df)
+      # Get NAV processed for all records
+      RatedDetails_df <- process_df(ClassifiedDetails_df,SelectedFundType,Start,End)
+      
+      # Convert data for representation
+      New_df <- transpose_results(RatedDetails_df)
+      remove(RatedDetails_df)
+      return(New_df)
     }
   )
   # Helper function to extract dataframe for analysis
   Analysed_df <- eventReactive(input$btn_analyse,
     {
-       FCode <- toString(input$si_FCodes)                          
-       FCode_df <- get_NAV(FCode,FY_Start(),FY_End(),key[1])  
+       FCode <- toString(input$si_FCodes)
+       FCode <- paste('AMFI/',FCode,sep = "")
+       withProgress(message = 'Processing...',detail = 'This may take upto 30 secs.Please wait.',
+                    value = 0, {
+                      FCode_df <- get_NAV(FCode,FY_Start(),FY_End())
+                      for (i in 1:90) {
+                        incProgress(1/80)
+                        Sys.sleep(0.1)
+                      }
+                    })
        return(FCode_df)
     }
   )
@@ -136,29 +179,5 @@ server <- function(input, output) {
        Analysed_dd_df <- Analysed_dd_df[,c(1)]
        return(Analysed_dd_df)
     }
-  )
-  #Dynamically update FundCode Dropdown
-  observe({
-    updateSelectizeInput(session = getDefaultReactiveDomain(),"si_FCodes", choices = Analysed_dd_df(),server = TRUE)
-    
-    
-  })
-  # render table for View Funds
-  output$SchemeDetailsTable <- renderDataTable(
-    SchemaDetails_df,
-    options = list(pageLength = 10),
-    searchDelay = 1000
-  )
-  # render table for Classify Funds
-  output$ClassifiedTable <- renderDataTable(
-    Classified_df(),
-    options = list(pageLength = 10),
-    searchDelay = 1000
-  )
-  # render table for Classify Funds
-  output$AnalysedTable <- renderDataTable(
-    Analysed_df(),
-    options = list(pageLength = 10),
-    searchDelay = 1000
   )
 }

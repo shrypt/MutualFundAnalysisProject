@@ -8,6 +8,8 @@
 #
 library(shiny)
 library(shinydashboard)
+library(plotly)
+library(fpp2)
 library(Quandl)
 library(dplyr)
 library(stringr)
@@ -19,5 +21,6 @@ source("ViewFunds.R")
 source("ClassifyFunds.R")
 source("AnalyseFund.R")
 source("TabulateRawData.R")
+source("Keys.R")
 # Run the application
 shinyApp(ui = ui, server = server)

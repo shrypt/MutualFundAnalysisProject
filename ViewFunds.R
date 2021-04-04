@@ -12,16 +12,23 @@ view_funds_content <- function()
   setwd(FileLocation)
   AbsoluteFilePath <- paste(FileLocation,"/",ZipName,sep = "")
   FileAPI <- "AMFI/metadata?"
-  Quandl.api_key("kxgRDGkKCSyyTRRNduxQ")
-#If file does not already exist, download and extract into data frame
+  key <- get_key(1)
+#If file already exist, delete if not latest file
+  if(file.exists(ZipName) == TRUE)
+  {
+    File_create_day <- as.numeric(format(file.mtime("SOURCEDATA.zip"),"%d"))
+    to_day <- as.numeric(format(Sys.time(),"%d"))
+    if(File_create_day < to_day){#Remove old files
+      file.remove(ZipName)
+    }
+  }#If file does not already exist, download and extract into data frame
   if(file.exists(ZipName) == FALSE)
   {
-    Quandl.database.bulk_download_to_file(FileAPI,AbsoluteFilePath)
+    Quandl.database.bulk_download_to_file(FileAPI, AbsoluteFilePath, api_key=key[1])
   }
+  
   fname <- as.character(unzip(AbsoluteFilePath, list = TRUE)$Name)
   RawMetaData <- read.csv(unzip(AbsoluteFilePath,fname))[,c(1,2,5,6)]
-  #file.remove(ZipName)
-  #file.remove(fname)
   setwd(currentDir)
   SchemeMetaData <- tabulate_meta_Data(RawMetaData)
   return(SchemeMetaData)
