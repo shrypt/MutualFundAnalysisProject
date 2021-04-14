@@ -56,7 +56,7 @@ server <- function(input, output) {
       }
       # Set Financial Year start date as per user selected value for Analyze Fund Performance tab
       CurrentTab <- toString(input$tabset)
-      if(CurrentTab == 'Analyse Fund Performance'){
+      if(CurrentTab == 'Analyze & Forecast'){
         Option <- toString(input$sld_analyse_TimeFrame)
         switch(Option,
                 "1" = begin_date <- paste(start_Year,start_date,sep = ""),
@@ -88,7 +88,7 @@ server <- function(input, output) {
   #Helper function to create plot for classify funds
   Classified_Plot <- eventReactive(input$btn_classify,{
     Plot_df <- Classified_df()
-    Plot_df <- slice_max(Plot_df,n=5,order_by = Cumulative_NAV,with_ties = TRUE)
+    Plot_df <- slice_max(Plot_df,n=10,order_by = Cumulative_NAV)
     if(Fund_Type() == "Institutional" & toString(input$rb_FundOption) == "Dividend")
     {
       SelectedFund <- paste("Top",nrow(Plot_df),"Institutional",toString(input$rb_FundOption),"funds",sep = " ")
@@ -125,14 +125,14 @@ server <- function(input, output) {
   #Helper function to plot for classify funds prediction
   Clustered_Plot <- eventReactive(input$btn_classify,{
     d <- Classified_df()
-    d <- slice_max(d,n=10,order_by = Cumulative_NAV,with_ties = TRUE)
+    d <- slice_max(d,n=20,order_by = Cumulative_NAV)
     #Normalization
     z <- d[,-c(1)]
     z <- na.omit(z)
-    distance <- dist(z)
+    distance <- (dist(z))^2
     #hierarchical clustering
     hc <- hclust(distance,method = "average")
-    fig <- plot(hc, hang =-1, labels=d$FCode,xlab="FCodes",sub="")
+    fig <- plot(hc, hang =-1,labels = d$FCode, xlab="FCode",sub="")
     return(fig)
   })
   # Helper function to extract dataframe for classification
@@ -163,8 +163,8 @@ server <- function(input, output) {
        withProgress(message = 'Processing...',detail = 'This may take upto 30 secs.Please wait.',
                     value = 0, {
                       FCode_df <- get_NAV(FCode,FY_Start(),FY_End())
-                      for (i in 1:90) {
-                        incProgress(1/80)
+                      for (i in 1:40) {
+                        incProgress(1/30)
                         Sys.sleep(0.1)
                       }
                     })

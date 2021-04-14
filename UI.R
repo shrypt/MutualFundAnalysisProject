@@ -1,26 +1,24 @@
-source("HomePage.R")
-source("AnalyseFund.R")
 # Define UI for application
 ui <- dashboardPage(
   skin = "blue",
   dashboardHeader(
-    title = "Mutual Fund Analysis"
+    title = "MF-CAF"
   ),
   dashboardSidebar(
     conditionalPanel(
-      condition = "input.tabset == 'Categorize Funds'",
+      condition = "input.tabset == 'Categorize'",
       box(
         collapsible = TRUE,
-        collapsed = FALSE,
-        title = strong("Filters"),
+        collapsed = TRUE,
+        title = strong("Sampling Filters"),
         background = "blue",
         width = '100%',
         height = '100%',
         solidHeader = TRUE,
-        em("Set below filters to classify funds:"),
+        em("Set below filters to Categorize funds:"),
         p(),
         radioButtons("rb_FundOption","Fund Option:",choices = list("Growth","Dividend"),inline = TRUE,width = '100%'),
-        selectInput("si_category","Category:",choices = list("Top 5 Retail","Top 5 Institutional"),multiple = FALSE,selected = NULL),
+        selectInput("si_category","Category:",choices = list("Top 10 Retail","Top 10 Institutional"),multiple = FALSE,selected = NULL),
         actionButton("btn_classify","Show Results",icon = icon("send"),style="background-color: orange;"),
         align = "center"
       ),
@@ -29,23 +27,23 @@ ui <- dashboardPage(
         background = "orange",
         width = 12,
         solidHeader = TRUE,
-        em("Due to network processing limits on Quandl, a maximum of 600 funds can be fetched currently. Calculations are based on data available for previous 5 financial years."),
+        em("Due to network processing limits on Quandl, a maximum of 400 funds can be fetched currently within a minute. Calculations are based on data available for previous 5 financial years for fetched funds."),
         style = "
-                                    font-size: 12px
+                                    font-size: 14px
                                 "
       ),
     ),
     conditionalPanel(
-      condition = "input.tabset == 'Analyse Fund Performance'",
+      condition = "input.tabset == 'Analyze & Forecast'",
       box(
         collapsible = TRUE,
-        collapsed = FALSE,
-        title = strong("Filters"),
+        collapsed = TRUE,
+        title = strong("Sampling Filters"),
         background = "blue",
         width = '100%',
         height = '100%',
         solidHeader = TRUE,
-        em("Set below filters to analyse a fund:"),
+        em("Set below filters to analyze a fund:"),
         p(),
         sliderInput("sld_analyse_TimeFrame","Financial Year:",min = 1,max = 5,step = 2,value = 5,pre = "Last ",post = " Yrs",ticks = FALSE),
         selectizeInput("si_FCodes","FundList:",choices = "Select FCode",multiple = FALSE,selected = NULL),
@@ -55,21 +53,51 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
-    #fluidRow(
+    fluidRow(
       tabBox(
         id = "tabset",
         width = 12,
-        selected ="Home Page",
-        tabPanel(id = "home_page","Home Page",home_page_content()),
-        tabPanel(id = "view_funds","View Funds",
-                 tags$style(HTML('table th {background-color: dodgerblue !important;}')),
-                 dataTableOutput('SchemeDetailsTable'),
-                 style = "
+        selected ="About",
+        tabPanel(
+          id = "home_page","About",
+          box(
+            title = strong("Info:"),
+            background = "aqua",
+            width = 12,
+            solidHeader = TRUE,
+            p("This interactive web application assists user to analyze performance of mutual funds
+              and to predict probable NAVs based on historical data available for the fund. Data is collected 
+              using Quandl APIs and updated dynamically."),
+            br(),
+            p("The user can perform following operations:"),
+            p("1. View, Search and Sort Funds"),
+            p("2. Categorize Funds"),
+            p("3. Analyze and Forecast Fund Performance"),
+            style = "
+                                     font-size: 14px
+                                "
+          )
+        ),
+        tabPanel(
+          id = "view_funds","View Funds",
+          box(
+            title = strong("Note:"),
+            background = "aqua",
+            width = 12,
+            solidHeader = TRUE,
+            p("Please click on column names to sort results."),
+            style = "
+                                    font-size: 14px
+                                "
+          ),
+          tags$style(HTML('table th {background-color: dodgerblue !important;}')),
+          dataTableOutput('SchemeDetailsTable'),
+          style = "
                                     font-size: 12px
                                 "
         ),
         tabPanel(
-          id = "classify_funds","Categorize Funds",
+          id = "classify_funds","Categorize",
           tags$style(".shiny-notification {top: 50% !important;left: 50% !important;margin-top: -100px !important;margin-left: -250px !important;}"),
           box(
             title = strong("Note:"),
@@ -87,7 +115,7 @@ ui <- dashboardPage(
             style = "
                                     background-color: #ECF0F5
                                 ",
-            plotlyOutput('CategoryPlot', width = "100%", height = "400px")
+            plotlyOutput('CategoryPlot', width = "100%", height = "500px")
           ),
           box(
             width = 6,
@@ -95,7 +123,7 @@ ui <- dashboardPage(
             style = "
                                     background-color: #ECF0F5
                                 ",
-            plotOutput('ClusteredPlot', width = "100%", height = "400px")
+            plotOutput('ClusteredPlot', width = "100%", height = "500px")
           ),
           #tags$style(HTML('table th {background-color: dodgerblue !important;}')),
           #dataTableOutput('ClassifiedTable'),
@@ -104,7 +132,7 @@ ui <- dashboardPage(
                                 "
         ),
         tabPanel(
-          id = "analyse_fund","Analyse Fund Performance",
+          id = "analyse_fund","Analyze & Forecast",
           box(
             title = strong("Note:"),
             background = "aqua",
@@ -121,7 +149,7 @@ ui <- dashboardPage(
             style = "
                                     background-color: #ECF0F5
                                 ",
-            plotlyOutput('TimeSeriesPlot', width = "100%", height = "400px")
+            plotlyOutput('TimeSeriesPlot', width = "100%", height = "500px")
           ),
           box(
             width = 6,
@@ -129,14 +157,15 @@ ui <- dashboardPage(
             style = "
                                     background-color: #ECF0F5
                                 ",
-            plotOutput('ForcastedPlot', width = "100%", height = "400px")
+            plotOutput('ForcastedPlot', width = "100%", height = "500px")
           )
           #tags$style(HTML('table th {background-color: dodgerblue !important;}')),
           #dataTableOutput('AnalysedTable')
         )
-      ),
+      )
+    ),
     tags$footer(
-      "#Version 1.2 | Shreyas Pandit | Symbiosis Centre for Distance Learning 2021", 
+      "#Version 1.4 | Shreyas Pandit | Symbiosis Centre for Distance Learning 2021", 
       align = "center",
       style = "
                         background-color: crimson;

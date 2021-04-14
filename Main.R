@@ -6,7 +6,6 @@
 # Test
 #    http://shiny.rstudio.com/
 #
-library(shiny)
 library(shinydashboard)
 library(plotly)
 library(fpp2)
@@ -16,9 +15,8 @@ library(stringr)
 library(doParallel)
 source("UI.R")
 source("Server.R")
-source("HomePage.R")
 source("ViewFunds.R")
-source("ClassifyFunds.R")
+source("CategorizeFunds.R")
 source("AnalyseFund.R")
 source("TabulateRawData.R")
 source("Keys.R")

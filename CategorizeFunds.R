@@ -1,7 +1,7 @@
 # Get cumulative NAV from Quandl for list of codes
 get_cumul_NAV <- function(FCodes_df,FY_StartLimit,FY_EndLimit,key)
 {
-  X <- Quandl(FCodes_df$MFCode, start_date=FY_StartLimit, end_date=FY_EndLimit, column_index = '1',api_key=key,transform = 'cumul', limit = 1)
+  X <- Quandl(FCodes_df$MFCode, start_date=FY_StartLimit, end_date=FY_EndLimit, column_index = '1', api_key=key, collapse = 'annual', transform = 'cumul', limit = 1)
   X <- X[,-c(1)]
   return(X)
 }
@@ -41,9 +41,9 @@ filter_df <- function(SchemaDetails_df,SelectedFundOption,Start,End,SelectedFund
 process_df <- function(ClassifiedDetails_df,SelectedFundType,Start,End){
   if(SelectedFundType == "Retail"){
     #set max records, cluster size and chunk and frame sizes
-    max_records <- 600
-    chunk_size <- 3
-    cluster_size <- 6
+    max_records <- 400
+    chunk_size <- 2
+    cluster_size <- 4
     frame_size <- as.integer(max_records/chunk_size)
     api_keys <- get_key(frame_size)
     
@@ -66,14 +66,14 @@ process_df <- function(ClassifiedDetails_df,SelectedFundType,Start,End){
     tryCatch({
       #Export functions and data to clusters for parallel processing
       clusterExport(cl,varlist = c("get_cumul_NAV","data_list","Quandl","Start","End","api_keys"),envir = environment())
-      withProgress(message = 'Processing...',detail = 'This may take upto 90 secs.Please wait.',
+      withProgress(message = 'Processing...',detail = 'This may take upto 60 secs.Please wait.',
                    value = 0, {
                      # Get cumulative NAV for all rows in all dataframes by cluster processing
                      RatedDetails_df <- foreach(code = 1:frame_size, .combine = cbind) %dopar% {
                        get_cumul_NAV(data.frame(data_list[code]),Start,End,api_keys[code])
                      }
-                     for (i in 1:90) {
-                       incProgress(1/80)
+                     for (i in 1:40) {
+                       incProgress(1/30)
                        Sys.sleep(0.1)
                      }
                    })
@@ -88,8 +88,8 @@ process_df <- function(ClassifiedDetails_df,SelectedFundType,Start,End){
     withProgress(message = 'Processing...',detail = 'This may take upto 30 secs.Please wait.',
                  value = 0, {
                    RatedDetails_df <- get_cumul_NAV(NormalDetails_df,Start,End,api_keys[1])
-                   for (i in 1:90) {
-                     incProgress(1/80)
+                   for (i in 1:30) {
+                     incProgress(1/20)
                      Sys.sleep(0.1)
                    }
                  })
