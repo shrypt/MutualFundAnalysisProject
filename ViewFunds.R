@@ -1,7 +1,7 @@
 # View Fund Content and functions
 view_funds_content <- function()
 {
-#Set File Parameters to fetch and store locally
+#Set File Parameters to fetch meta-data csv and store locally
   currentDir <- getwd()
   FileLocation <- "C:/temp"
   ZipName <- "SOURCEDATA.zip"

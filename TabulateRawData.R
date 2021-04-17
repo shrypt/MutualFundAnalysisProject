@@ -15,6 +15,7 @@ tabulate_meta_Data <- function(RawMetaData){
   names(RawMetaData)[3] <- "To"
   return(RawMetaData)
 }
+#Helper function
 identify_fund_plan <- function(x){
   Pattern1 <- "\\b(g|growth|appreciation|gro|cumulative|cum)\\b"
   Pattern2 <- "^$"
@@ -29,6 +30,7 @@ identify_fund_plan <- function(x){
     return("Dividend")
   }
 }
+#Helper function
 identify_fund_type <- function(x){
   Pattern1 <- "(?i)\\b(inst)"
   Pattern2 <- "^$"

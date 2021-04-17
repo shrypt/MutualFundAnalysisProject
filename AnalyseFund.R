@@ -6,7 +6,7 @@ get_NAV <- function(FCode,FY_StartLimit,FY_EndLimit)
   names(X)[2] <- "NAV"
   return(X)
 }
-# Analyse time series and predict NAV
+# Analyse time series
 predict_NAV <- function(data_df,start_date){
   year <- as.numeric(format(as.Date(start_date),"%Y"))
   month <- as.numeric(format(as.Date(start_date),"%m"))

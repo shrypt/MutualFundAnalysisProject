@@ -165,7 +165,7 @@ ui <- dashboardPage(
       )
     ),
     tags$footer(
-      "#Version 1.4 | Shreyas Pandit | Symbiosis Centre for Distance Learning 2021", 
+      "An RStudio Project by Shreyas Pandit | Symbiosis Centre for Distance Learning 2021", 
       align = "center",
       style = "
                         background-color: crimson;
