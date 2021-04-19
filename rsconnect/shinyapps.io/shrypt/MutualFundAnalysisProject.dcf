@@ -1,0 +1,13 @@
+name: MutualFundAnalysisProject
+title: MutualFundAnalysisProject
+username:
+account: shrypt
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3986001
+bundleId: 4486093
+url: https://shrypt.shinyapps.io/MutualFundAnalysisProject/
+when: 1618736092.49854
+lastSyncTime: 1618736092.49854
+asMultiple: FALSE
+asStatic: FALSE

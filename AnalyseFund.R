@@ -1,3 +1,9 @@
+# Project: MUTUAL FUND CATEGORIZATION, ANALYSIS AND FORECAST (MF-CAF)
+# Author: SHREYAS SANJAY PANDIT
+# Registration Number: 201906694
+# Academic Year: 2019
+# Last Updated on: 21-APR-2021
+
 # Get NAV for selected Fund and time limits from Quandl
 get_NAV <- function(FCode,FY_StartLimit,FY_EndLimit)
 {

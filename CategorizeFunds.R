@@ -1,3 +1,9 @@
+# Project: MUTUAL FUND CATEGORIZATION, ANALYSIS AND FORECAST (MF-CAF)
+# Author: SHREYAS SANJAY PANDIT
+# Registration Number: 201906694
+# Academic Year: 2019
+# Last Updated on: 21-APR-2021
+
 # Get cumulative NAV from Quandl for list of codes
 get_cumul_NAV <- function(FCodes_df,FY_StartLimit,FY_EndLimit,key)
 {
@@ -42,7 +48,7 @@ process_df <- function(ClassifiedDetails_df,SelectedFundType,Start,End){
   if(SelectedFundType == "Retail"){
     #set max records, cluster size and chunk and frame sizes
     max_records <- 400
-    chunk_size <- 2
+    chunk_size <- 40
     cluster_size <- 4
     frame_size <- as.integer(max_records/chunk_size)
     api_keys <- get_key(frame_size)

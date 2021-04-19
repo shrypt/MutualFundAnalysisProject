@@ -1,9 +1,15 @@
+# Project: MUTUAL FUND CATEGORIZATION, ANALYSIS AND FORECAST (MF-CAF)
+# Author: SHREYAS SANJAY PANDIT
+# Registration Number: 201906694
+# Academic Year: 2019
+# Last Updated on: 21-APR-2021
+
 # View Fund Content and functions
 view_funds_content <- function()
 {
 #Set File Parameters to fetch meta-data csv and store locally
   currentDir <- getwd()
-  FileLocation <- "C:/temp"
+  FileLocation <- "C:/temp" #/srv/connect/apps/MutualFundAnalysisProject/temp on server
   ZipName <- "SOURCEDATA.zip"
   if(dir.exists(FileLocation) == FALSE)
   {
@@ -19,7 +25,8 @@ view_funds_content <- function()
     File_create_day <- as.numeric(format(file.mtime("SOURCEDATA.zip"),"%d"))
     to_day <- as.numeric(format(Sys.time(),"%d"))
     if(File_create_day < to_day){#Remove old files
-      file.remove(ZipName)
+      file.remove(dir())
+      #file.remove(ZipName)
     }
   }#If file does not already exist, download and extract into data frame
   if(file.exists(ZipName) == FALSE)
