@@ -4,10 +4,10 @@ username:
 account: shrypt
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 3986001
-bundleId: 4489402
+appId: 3998162
+bundleId: 4494280
 url: https://shrypt.shinyapps.io/MutualFundAnalysisProject/
-when: 1618817151.06743
-lastSyncTime: 1618817151.06743
+when: 1618901851.20973
+lastSyncTime: 1618901851.20973
 asMultiple: FALSE
 asStatic: FALSE
