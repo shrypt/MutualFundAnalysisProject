@@ -27,10 +27,33 @@ ui <- dashboardPage(
   ),
   dashboardSidebar(
     conditionalPanel(
+      condition = "input.tabset == 'View Funds'",
+      box( #dummy box for alignment
+        background = "black",
+        style = "
+                  background-color: #222d32 
+                ",
+        width = '100%',
+        height = '100%',
+        br()
+      ),
+      box(
+        title = strong("Info:"),
+        background = "blue",
+        width = 12,
+        solidHeader = TRUE,
+        em("To see the latest updated entries, click twice on 'To' column. 
+            Use the search box or column filter boxes to look for specific fund."),
+        style = "
+                                    font-size: 14px
+                                "
+      ),
+    ),
+    conditionalPanel(
       condition = "input.tabset == 'Categorize'",
       box(
         collapsible = TRUE,
-        collapsed = TRUE,
+        collapsed = FALSE,
         title = strong("Sampling Filters"),
         background = "blue",
         width = '100%',
@@ -70,7 +93,17 @@ ui <- dashboardPage(
         selectizeInput("si_FCodes","FundList:",choices = "Select FCode",multiple = FALSE,selected = NULL),
         actionButton("btn_analyse","Show Results",icon = icon("send"),style="background-color: aqua;"),
         align = "center"
-      )
+      ),
+      box(
+        title = strong("Info:"),
+        background = "aqua",
+        width = 12,
+        solidHeader = TRUE,
+        em("The Past Performance graph is interactive. Hover over or select an area on graph to zoom in on dates."),
+        style = "
+                                    font-size: 14px
+                                "
+      ),
     )
   ),
   dashboardBody(
@@ -86,9 +119,8 @@ ui <- dashboardPage(
             background = "aqua",
             width = 12,
             solidHeader = TRUE,
-            p("This interactive web application assists user to analyze performance of mutual funds
-              and to predict probable NAVs based on historical data available for the fund. Data is collected 
-              using Quandl APIs and updated dynamically."),
+            p("This interactive web application assists user to analyze performance of mutual funds.
+               Data is updated dynamically using Quandl APIs."),
             br(),
             p("The user can perform following operations:"),
             p("1. View, Search and Sort Funds"),
@@ -101,16 +133,6 @@ ui <- dashboardPage(
         ),
         tabPanel(
           id = "view_funds","View Funds",
-          box(
-            title = strong("Note:"),
-            background = "aqua",
-            width = 12,
-            solidHeader = TRUE,
-            p("Please click on column names to sort results."),
-            style = "
-                                    font-size: 14px
-                                "
-          ),
           tags$style(HTML('table th {background-color: dodgerblue !important;}')),
           dataTableOutput('SchemeDetailsTable'),
           style = "
@@ -186,7 +208,7 @@ ui <- dashboardPage(
       )
     ),
     tags$footer(
-      "An RStudio Project by Shreyas Pandit | Symbiosis Centre for Distance Learning 2021", 
+      "|| - An RStudio Project by Shreyas Pandit - Symbiosis Centre for Distance Learning - Copyright 2021 - ||", 
       align = "center",
       style = "
                         background-color: crimson;
